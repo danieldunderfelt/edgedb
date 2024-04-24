@@ -507,6 +507,10 @@ async def _start_chat(
         await _start_anthropic_chat(
             protocol, request, response,
             provider, model_name, messages, stream)
+    elif provider.api_style == "Cohere":
+        await _start_cohere_chat(
+            protocol, request, response,
+            provider, model_name, messages, stream)
     else:
         raise RuntimeError(
             f"unsupported model provider API style: {provider.api_style}, "
@@ -668,6 +672,39 @@ async def _start_openai_chat(
     }
 
     if provider.name == "builtin::openai" and provider.client_id:
+        headers["OpenAI-Organization"] = provider.client_id
+
+    client = httpx.AsyncClient(
+        base_url=provider.api_url,
+        headers=headers,
+    )
+
+    await _start_openai_like_chat(
+        protocol,
+        request,
+        response,
+        client,
+        model_name,
+        messages,
+        stream,
+    )
+
+
+async def _start_cohere_chat(
+    protocol: protocol.HttpProtocol,
+    request: protocol.HttpRequest,
+    response: protocol.HttpResponse,
+    provider,
+    model_name: str,
+    messages: list[dict],
+    stream: bool,
+) -> None:
+    # TODO: implement Cohere chat
+    headers = {
+        "Authorization": f"Bearer {provider.secret}",
+    }
+
+    if provider.name == "builtin::cohere" and provider.client_id:
         headers["OpenAI-Organization"] = provider.client_id
 
     client = httpx.AsyncClient(

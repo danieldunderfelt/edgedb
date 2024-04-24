@@ -137,6 +137,27 @@ CREATE EXTENSION PACKAGE ai VERSION '1.0' {
         };
     };
 
+    create type ext::ai::CohereProviderConfig extending ext::ai::ProviderConfig {
+            alter property name {
+                set protected := true;
+                set default := 'builtin::cohere';
+            };
+
+            alter property display_name {
+                set protected := true;
+                set default := 'Cohere';
+            };
+
+            alter property api_url {
+                set default := 'https://api.cohere.ai/v1'
+            };
+
+            alter property api_style {
+                set protected := true;
+                set default := ext::ai::ProviderAPIStyle.Cohere;
+            };
+        };
+
     create type ext::ai::Config extending cfg::ExtensionConfig {
         create required property indexer_naptime: std::duration {
             set default := <std::duration>'10s';
@@ -340,6 +361,17 @@ CREATE EXTENSION PACKAGE ai VERSION '1.0' {
             ext::ai::model_provider := "builtin::anthropic";
         alter annotation
             ext::ai::text_gen_model_context_window := "200000";
+    };
+
+    create abstract type ext::ai::CohereCommandRPlusModel
+        extending ext::ai::TextGenerationModel
+    {
+        alter annotation
+            ext::ai::model_name := "command-r-plus";
+        alter annotation
+            ext::ai::model_provider := "builtin::cohere";
+        alter annotation
+            ext::ai::text_gen_model_context_window := "128000";
     };
 
     create scalar type ext::ai::DistanceFunction
